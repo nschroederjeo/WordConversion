@@ -13,8 +13,6 @@ replace_dict = {
 st.title("DOCX Word Replacer")
 
 uploaded_file = st.file_uploader("Upload a Word (.docx) file", type="docx")
-original_filename = os.path.splitext(uploaded_file.name)[0]
-modified_filename = f"{original_filename}_modified.docx"
 
 if uploaded_file:
     document = Document(uploaded_file)
@@ -27,6 +25,9 @@ if uploaded_file:
                 para.text = para.text.replace(key, value)
                 changes_made = True
 
+    original_filename = os.path.splitext(uploaded_file.name)[0]
+    modified_filename = f"{original_filename}_modified.docx"
+    
     if changes_made:
         buffer = BytesIO()
         document.save(buffer)
