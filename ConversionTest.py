@@ -1,6 +1,7 @@
 import streamlit as st
 from docx import Document
 from io import BytesIO
+import os
 
 # Replacement dictionary
 replace_dict = {
@@ -12,6 +13,8 @@ replace_dict = {
 st.title("DOCX Word Replacer")
 
 uploaded_file = st.file_uploader("Upload a Word (.docx) file", type="docx")
+original_filename = os.path.splitext(uploaded_file.name)[0]
+modified_filename = f"{original_filename}_modified.docx"
 
 if uploaded_file:
     document = Document(uploaded_file)
@@ -32,7 +35,7 @@ if uploaded_file:
         st.download_button(
             label="Download modified file",
             data=buffer,
-            file_name="modified.docx",
+            file_name=modified_filename,
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
     else:
