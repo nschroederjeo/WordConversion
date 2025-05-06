@@ -2,6 +2,7 @@ import streamlit as st
 from docx import Document
 from io import BytesIO
 import os
+import zipfile
 
 # Replacement dictionary
 replace_dict = {
@@ -10,34 +11,47 @@ replace_dict = {
     "feet": "feet;"
 }
 
-st.title("DOCX Word Replacer")
+st.title("Batch DOCX Word Replacer")
 
-uploaded_file = st.file_uploader("Upload a Word (.docx) file", type="docx")
+uploaded_files = st.file_uploader(
+    "Upload one or more Word (.docx) files", type="docx", accept_multiple_files=True
+)
 
-if uploaded_file:
-    document = Document(uploaded_file)
-    changes_made = False
+if uploaded_files:
+    modified_files = []
 
-    for para in document.paragraphs:
-        for key, value in replace_dict.items():
-            if key in para.text:
-                st.write(f"Replacing '{key}' with '{value}' in: {para.text}")
-                para.text = para.text.replace(key, value)
-                changes_made = True
+    for uploaded_file in uploaded_files:
+        document = Document(uploaded_file)
+        changes_made = False
 
-    original_filename = os.path.splitext(uploaded_file.name)[0]
-    modified_filename = f"{original_filename}_modified.docx"
-    
-    if changes_made:
-        buffer = BytesIO()
-        document.save(buffer)
-        buffer.seek(0)
+        for para in document.paragraphs:
+            for key, value in replace_dict.items():
+                if key in para.text:
+                    st.write(f"Replacing '{key}' with '{value}' in {uploaded_file.name}: {para.text}")
+                    para.text = para.text.replace(key, value)
+                    changes_made = True
 
+        if changes_made:
+            buffer = BytesIO()
+            document.save(buffer)
+            buffer.seek(0)
+            modified_files.append((uploaded_file.name, buffer))
+
+    if modified_files:
+        # Create a ZIP file of all modified docs
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w") as zipf:
+            for filename, file_buffer in modified_files:
+                base, _ = os.path.splitext(filename)
+                modified_filename = f"{base}_modified.docx"
+                zipf.writestr(modified_filename, file_buffer.read())
+
+        zip_buffer.seek(0)
         st.download_button(
-            label="Download modified file",
-            data=buffer,
-            file_name=modified_filename,
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            label="Download all modified files as ZIP",
+            data=zip_buffer,
+            file_name="modified_documents.zip",
+            mime="application/zip"
         )
     else:
-        st.info("No matches found for replacement.")
+        st.info("No matches found for replacement in any document.")
