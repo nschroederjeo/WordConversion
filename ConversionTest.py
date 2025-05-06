@@ -3,6 +3,7 @@ from docx import Document
 from io import BytesIO
 import os
 import zipfile
+import re
 
 # Replacement dictionary
 replace_dict = {
@@ -28,7 +29,15 @@ if uploaded_files:
             for key, value in replace_dict.items():
                 if key in para.text:
                     st.write(f"Replacing '{key}' with '{value}' in {uploaded_file.name}: {para.text}")
-                    para.text = para.text.replace(key, value)
+                    # Inside your loop:
+                    if key == "feet":
+                        # Only replace 'feet' when NOT followed by a semicolon
+                        new_text = re.sub(r'\bfeet\b(?!;)', value, para.text)
+                    else:
+                        new_text = para.text.replace(key, value)
+                    
+                    if para.text != new_text:
+                        para.text = new_text
                     changes_made = True
 
         if changes_made:
