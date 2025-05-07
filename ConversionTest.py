@@ -12,7 +12,7 @@ replace_dict = {
     "feet": "feet;"
 }
 
-st.title("Batch DOCX Word Replacer")
+st.title("Batch DOCX Survey Word Replacer")
 
 uploaded_files = st.file_uploader(
     "Upload one or more Word (.docx) files", type="docx", accept_multiple_files=True
