@@ -26,19 +26,20 @@ if uploaded_files:
         changes_made = False
 
         for para in document.paragraphs:
+            original_text = para.text
+            new_text = original_text
+
             for key, value in replace_dict.items():
-                if key in para.text:
-                    st.write(f"Replacing '{key}' with '{value}' in {uploaded_file.name}: {para.text}")
-                    # Inside your loop:
-                    if key == "feet":
-                        # Only replace 'feet' when NOT followed by a semicolon
-                        new_text = re.sub(r'\bfeet\b(?!;)', value, para.text)
-                    else:
-                        new_text = para.text.replace(key, value)
-                    
-                    if para.text != new_text:
-                        para.text = new_text
-                    changes_made = True
+                if key == "feet":
+                    # Replace 'feet' only if NOT already followed by a semicolon
+                    new_text = re.sub(r'\bfeet\b(?!;)', value, new_text)
+                else:
+                    new_text = new_text.replace(key, value)
+
+            if original_text != new_text:
+                st.write(f"Modified in {uploaded_file.name}: {original_text} → {new_text}")
+                para.text = new_text
+                changes_made = True
 
         if changes_made:
             buffer = BytesIO()
@@ -47,7 +48,6 @@ if uploaded_files:
             modified_files.append((uploaded_file.name, buffer))
 
     if modified_files:
-        # Create a ZIP file of all modified docs
         zip_buffer = BytesIO()
         with zipfile.ZipFile(zip_buffer, "w") as zipf:
             for filename, file_buffer in modified_files:
