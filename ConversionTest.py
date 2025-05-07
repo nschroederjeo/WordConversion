@@ -52,7 +52,7 @@ if uploaded_files:
         with zipfile.ZipFile(zip_buffer, "w") as zipf:
             for filename, file_buffer in modified_files:
                 base, _ = os.path.splitext(filename)
-                modified_filename = f"{base}_modified.docx"
+                modified_filename = f"{base}.docx"
                 zipf.writestr(modified_filename, file_buffer.read())
 
         zip_buffer.seek(0)
